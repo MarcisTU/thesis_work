@@ -65,12 +65,12 @@ def vec_3dto2d(vec3):
 #######
 
 class Character:
-    def __init__(self, pos):
+    def __init__(self, pos, scale=[1, 1]):
         self.__angle = 0
 
         self.geometry = []
         self.color = 'g'
-        self.s = np.array([0.5, 1])
+        self.s = np.array(scale)
 
         self.C = np.identity(3)
         self.R = rotMatrix(self.__angle)
@@ -124,7 +124,7 @@ class Character:
         self.C = dot(self.C, self.T)
         self.C = dot(self.C, self.R)
 
-        # Scale back to desired scale
+        # Scale back to default scale
         self.S = scaleMatrix(sx=self.s[0], sy=self.s[1])
         self.C = dot(self.C, self.S)
 
@@ -143,8 +143,8 @@ class Character:
 
 
 class Player(Character):
-    def __init__(self, start_pos):
-        super().__init__(start_pos)
+    def __init__(self, start_pos, scale=[1, 1]):
+        super().__init__(start_pos, scale)
 
         self.generateGeometry()
     
@@ -158,8 +158,8 @@ class Player(Character):
         
 
 class Asteroid(Character):
-    def __init__(self, start_pos, radius, angle):
-        super().__init__(start_pos)
+    def __init__(self, start_pos, radius, angle, scale=[1, 1]):
+        super().__init__(start_pos, scale)
         # Number of points to draw for circle
         self.n = 20
         self.r = radius
@@ -172,8 +172,8 @@ class Asteroid(Character):
     def generateGeometry(self):
         self.geometry = [
             (
-                self.r * 4 + (np.cos(2 * np.pi/self.n * x) * self.r * 2 + np.random.rand(1)[0]),
-                self.r * 2 + (np.sin(2 * np.pi/self.n * x) * self.r)
+                (np.cos(2 * np.pi/self.n * x) * self.r + np.random.uniform(low=0.1, high=0.3)),
+                (np.sin(2 * np.pi/self.n * x) * self.r)
             ) for x in range(0, self.n+1)
         ]
     
@@ -188,7 +188,7 @@ class Asteroid(Character):
 # Create player and Asteroids
 ###
 characters = []
-player = Player([0.0, 0.0]) 
+player = Player(start_pos=[0.0, 0.0], scale=[0.5, 1]) 
 characters.append(player)
 
 asteroid1 = Asteroid([3.0, 3.0], radius=1.2, angle=25)
