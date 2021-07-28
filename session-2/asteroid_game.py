@@ -76,7 +76,7 @@ class Character:
         self.__angle = 0
 
         self.geometry = []
-        self.com = np.array(pos)    # Co-ordinates for center of mass
+        self.pos = np.array(pos)
         self.color = 'g'
         self.x_data = []
         self.y_data = []
@@ -84,7 +84,7 @@ class Character:
         self.C = np.identity(3)
         self.R = rotMatrix(self.__angle)
         self.S = scaleMatrix(sx=scale[0], sy=scale[1])
-        self.T = translateMatrix(dx=self.com[0], dy=self.com[1])
+        self.T = translateMatrix(dx=self.pos[0], dy=self.pos[1])
         self.C = self.T
         self.C = dot(self.C, self.R)
         self.C = dot(self.C, self.S)
@@ -100,30 +100,30 @@ class Character:
             self.R[0][0]
         ])
 
-        # No need to point translate since characters centre of mass is our base position
-        self.C = translateMatrix(self.com[0], self.com[1])
+        self.C = translateMatrix(self.pos[0], self.pos[1])
         self.C = dot(self.C, self.R)
         self.C = dot(self.C, self.S)
+        self.C = dot(self.C, translateMatrix(0, -0.333))  # Centre of mass for player is ~ -0.333
+
+    def calculateCenterOfMass(self):
+        x_sum = 0
+        y_sum = 0
+        for i in range(0, len(self.geometry) - 1):
+            x_sum += self.x_data[i]
+            y_sum += self.y_data[i]
+        x_c = x_sum / (len(self.geometry) - 1)
+        y_c = y_sum / (len(self.geometry) - 1)
+        self.pos = np.array([x_c, y_c])
 
     def getAngle(self):
         return self.__angle
 
     def getCurPos(self):
-        return self.com
+        return self.pos
 
     def move(self):
         self.x_data = []
         self.y_data = []
-        x_sum = 0
-        y_sum = 0
-
-        # move character in each axis according to rotation
-        d_x = self.direction[0] * self.speed
-        d_y = self.direction[1] * self.speed
-        self.com[0] += d_x
-        self.com[1] += d_y
-        self.T = translateMatrix(dx=0, dy=self.speed)
-        self.C = dot(self.C, self.T)
 
         # Update geometry co-ordinates
         for vec2 in self.geometry:
@@ -135,16 +135,16 @@ class Character:
             self.y_data.append(vec2_[1])
 
         # Calculate centre of mass using average coordinates
-        for i in range(0, len(self.geometry) - 1):
-            x_sum += self.x_data[i]
-            y_sum += self.y_data[i]
-        x_c = x_sum / (len(self.geometry) - 1)
-        y_c = y_sum / (len(self.geometry) - 1)
-        self.com = np.array([x_c, y_c])
+        self.calculateCenterOfMass()
+
+        # move character in each axis according to rotation
+        self.pos[0] += self.direction[0] * self.speed
+        self.pos[1] += self.direction[1] * self.speed
+        self.T = translateMatrix(dx=0, dy=self.speed)
+        self.C = dot(self.C, self.T)
 
     def draw(self):
         plt.plot(self.x_data, self.y_data, c=self.color)
-        # plt.plot(self.com[0], self.com[1], 'o', mew=1, ms=3)  # Display centre of mass point
 
 
 class Bullet(Character):
@@ -212,15 +212,13 @@ class Asteroid(Character):
     def checkOutOfBounds(self):
         # Keep track of recent change number to avoid asteroid getting stuck outside the boundary
         self.checks += 1
-        if (self.com[0] >= 9 or self.com[0] <= -9) and self.checks > 10:
+        if (self.pos[0] >= 9 or self.pos[0] <= -9) and self.checks > 10:
             self.speed = -self.speed
             self.checks = 0
-        elif (self.com[1] >= 9 or self.com[1] <= -9) and self.checks > 10:
+        elif (self.pos[1] >= 9 or self.pos[1] <= -9) and self.checks > 10:
             self.speed = -self.speed
             self.checks = 0
 
-###
-###
 
 characters = []
 player = Player(start_pos=[0.0, 0.0], scale=[0.5, 1])
@@ -253,9 +251,9 @@ def handleEvents(event):
         bullet = Bullet(start_pos, direction, trans_matrix, scale=[0.5, 1])
         characters.append(bullet)
     elif event.key == 'left':
-        player.setAngle(player.getAngle() + 15)
+        player.setAngle(player.getAngle() + 10)
     elif event.key == 'right':
-        player.setAngle(player.getAngle() - 15)
+        player.setAngle(player.getAngle() - 10)
 
 fig, _ = plt.subplots()
 fig.canvas.mpl_connect('key_press_event', handleEvents)
