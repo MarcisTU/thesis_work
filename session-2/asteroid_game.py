@@ -23,7 +23,7 @@ def translateMatrix(dx, dy):
         [1, 0, dx],
         [0, 1, dy],
         [0, 0, 1]
-    ])
+    ], dtype=object)
     return T
 
 def scaleMatrix(sx, sy):
@@ -72,24 +72,24 @@ def vec_3dto2d(vec3):
 
 
 class Character:
-    def __init__(self, pos, scale=[1, 1]):
+    def __init__(self, pos=[0, 0], scale=[1, 1]):
         self.__angle = 0
 
         self.geometry = []
+        self.com = np.array(pos)    # Co-ordinates for center of mass
         self.color = 'g'
-        self.s = np.array(scale)
-        self.pos = np.array(pos)
+        self.x_data = []
+        self.y_data = []
 
         self.C = np.identity(3)
         self.R = rotMatrix(self.__angle)
-        self.S = scaleMatrix(sx=self.s[0], sy=self.s[1])
-        self.T = translateMatrix(dx=self.pos[0], dy=self.pos[1])
+        self.S = scaleMatrix(sx=scale[0], sy=scale[1])
+        self.T = translateMatrix(dx=self.com[0], dy=self.com[1])
         self.C = self.T
         self.C = dot(self.C, self.R)
         self.C = dot(self.C, self.S)
 
-        self.dirInit = np.array([0.0, 1.0])
-        self.direction = np.array(self.dirInit)
+        self.direction = np.array([0.0, 1.0])
         self.speed = np.random.uniform(0.05, 0.1, 1)
     
     def setAngle(self, angle):
@@ -99,41 +99,52 @@ class Character:
             self.R[0][1],
             self.R[0][0]
         ])
-                                                            # Mathematical order of matrix multiplying
-        self.C = translateMatrix(self.pos[0], self.pos[1])  # 5
-        self.C = dot(self.C, translateMatrix(0, 0.25))      # 4  Point translation back
-        self.C = dot(self.C, self.R)                        # 3
-        self.C = dot(self.C, translateMatrix(0, -0.25))     # 2  Point translation
-        self.C = dot(self.C, self.S)                        # 1
+
+        # No need to point translate since characters centre of mass is our base position
+        self.C = translateMatrix(self.com[0], self.com[1])
+        self.C = dot(self.C, self.R)
+        self.C = dot(self.C, self.S)
 
     def getAngle(self):
         return self.__angle
 
     def getCurPos(self):
-        return self.pos
+        return self.com
 
     def move(self):
+        self.x_data = []
+        self.y_data = []
+        x_sum = 0
+        y_sum = 0
+
         # move character in each axis according to rotation
         d_x = self.direction[0] * self.speed
         d_y = self.direction[1] * self.speed
-        self.pos[0] += d_x
-        self.pos[1] += d_y
+        self.com[0] += d_x
+        self.com[1] += d_y
         self.T = translateMatrix(dx=0, dy=self.speed)
         self.C = dot(self.C, self.T)
 
-    def draw(self):
-        x_data = []
-        y_data = []
-
+        # Update geometry co-ordinates
         for vec2 in self.geometry:
             vec3 = vec_2dto3d(np.array(vec2))
             vec3_r = dot(self.C, vec3)
-            vec2_ = vec_3dto2d(vec3_r)    
-        
-            x_data.append(vec2_[0])
-            y_data.append(vec2_[1])
+            vec2_ = vec_3dto2d(vec3_r)
 
-        plt.plot(x_data, y_data, c=self.color)
+            self.x_data.append(vec2_[0])
+            self.y_data.append(vec2_[1])
+
+        # Calculate centre of mass using average coordinates
+        for i in range(0, len(self.geometry) - 1):
+            x_sum += self.x_data[i]
+            y_sum += self.y_data[i]
+        x_c = x_sum / (len(self.geometry) - 1)
+        y_c = y_sum / (len(self.geometry) - 1)
+        self.com = np.array([x_c, y_c])
+
+    def draw(self):
+        plt.plot(self.x_data, self.y_data, c=self.color)
+        # plt.plot(self.com[0], self.com[1], 'o', mew=1, ms=3)  # Display centre of mass point
 
 
 class Bullet(Character):
@@ -156,7 +167,6 @@ class Bullet(Character):
 class Player(Character):
     def __init__(self, start_pos, scale=[1, 1]):
         super().__init__(start_pos, scale)
-
         self.generateGeometry()
 
     def getDirection(self):
@@ -202,10 +212,10 @@ class Asteroid(Character):
     def checkOutOfBounds(self):
         # Keep track of recent change number to avoid asteroid getting stuck outside the boundary
         self.checks += 1
-        if (self.pos[0] >= 9 or self.pos[0] <= -9) and self.checks > 10:
+        if (self.com[0] >= 9 or self.com[0] <= -9) and self.checks > 10:
             self.speed = -self.speed
             self.checks = 0
-        elif (self.pos[1] >= 9 or self.pos[1] <= -9) and self.checks > 10:
+        elif (self.com[1] >= 9 or self.com[1] <= -9) and self.checks > 10:
             self.speed = -self.speed
             self.checks = 0
 
@@ -243,9 +253,9 @@ def handleEvents(event):
         bullet = Bullet(start_pos, direction, trans_matrix, scale=[0.5, 1])
         characters.append(bullet)
     elif event.key == 'left':
-        player.setAngle(player.getAngle() + 10)
+        player.setAngle(player.getAngle() + 15)
     elif event.key == 'right':
-        player.setAngle(player.getAngle() - 10)
+        player.setAngle(player.getAngle() - 15)
 
 fig, _ = plt.subplots()
 fig.canvas.mpl_connect('key_press_event', handleEvents)
@@ -261,7 +271,7 @@ def checkOutOfRangeBullet(character):
 
 def checkAsteroidHit(character):
     bullet_pos = character.getCurPos()
-    # Iterate over to check if hit asteroids
+    # Iterate over to check if asteroid is hit
     for character_ in characters:
         if isinstance(character_, Asteroid):
             asteroid_pos = character_.getCurPos()
@@ -277,10 +287,13 @@ def checkAsteroidHit(character):
                 characters.remove(character_)
                 characters.remove(character)
 
+
 while is_running:
     plt.clf()
     plt.xlim(-10, 10)
     plt.ylim(-10, 10)
+
+    num_asteroids = 0
 
     for character in characters:
         if isinstance(character, Bullet):
@@ -296,6 +309,19 @@ while is_running:
 
         # Draw everything on plot
         character.draw()
-    
+
+        # Display score
+        if isinstance(character, Asteroid):
+            num_asteroids += 1
+
+    plt.title(f"Asteroids left: {num_asteroids}")
+
+    if num_asteroids == 0:
+        plt.title(f"Game finished!")
+        plt.pause(2)
+        is_running = False
+        plt.close('all')
+        continue
+
     plt.draw()
     plt.pause(1e-3)
