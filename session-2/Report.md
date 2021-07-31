@@ -146,11 +146,8 @@ if num_asteroids == 0:
     plt.pause(2)
     is_running = False
     plt.close('all')
-    #continue
 ```
-
 <h3>Fixed spaghetti code</h3>
-
 ```python
 # generate points using sin and cos functions and add some distortion to the lines
 def generateGeometry(self):
