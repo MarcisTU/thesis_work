@@ -116,7 +116,7 @@ def checkAsteroidHit(character):
                 characters.remove(character_)
                 characters.remove(character)
 ```
-<h4>Main loop</h4>
+<h4>Main loop:</h4>
 ```python
 num_asteroids = 0
 
