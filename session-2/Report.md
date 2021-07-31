@@ -116,6 +116,7 @@ def checkAsteroidHit(character):
                 characters.remove(character_)
                 characters.remove(character)
 ```
+<h3>Main loop:</h3>
 ___
 ```python
 num_asteroids = 0
@@ -168,8 +169,7 @@ def generateGeometry(self):
 ![Game Screeenshot 4](screenshots/session-2_asteroid4.png "Game Screeenshot 4")
 ___
 ___
-
-<h1>Task 2: Inverse Kinematics robot</h1>
+Task 2: Inverse Kinematics robot
 
 <h3>Rotation matrix and Derivative:</h3>
 ```python
