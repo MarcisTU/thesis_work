@@ -146,7 +146,7 @@ if num_asteroids == 0:
     plt.pause(2)
     is_running = False
     plt.close('all')
-    continue
+    #continue
 ```
 
 <h3>Fixed spaghetti code</h3>
