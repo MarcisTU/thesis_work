@@ -116,7 +116,7 @@ def checkAsteroidHit(character):
                 characters.remove(character_)
                 characters.remove(character)
 ```
-<h4>Main loop:</h4>
+<h3>Main loop:</h3>
 ```python
 num_asteroids = 0
 
@@ -147,7 +147,9 @@ if num_asteroids == 0:
     is_running = False
     plt.close('all')
 ```
+
 <h3>Fixed spaghetti code</h3>
+
 ```python
 # generate points using sin and cos functions and add some distortion to the lines
 def generateGeometry(self):
@@ -157,6 +159,7 @@ def generateGeometry(self):
         y_point = np.sin(2 * np.pi/self.n * x) * self.r
         self.geometry.append([x_point, y_point])
 ```
+
 <h4>Screenshots:</h4>
 
 ![Game Screeenshot 1](screenshots/session-2_asteroid1.png "Game Screeenshot 1")
