@@ -20,12 +20,12 @@ def da_sigmoid(a):
     return sigmoid(a) * (1 - sigmoid(a))
 
 def model(W, b, x):
-    return sigmoid(linear(W, b, x)) * 20
+    return sigmoid(linear(W, b, x)) * 10
 
 def dW_model(W, b, x):
-    return da_sigmoid(W * x + b) * dW_linear(W) * 20
+    return da_sigmoid(W * x + b) * dW_linear(W) * 10
 def db_model(W, b, x):
-    return da_sigmoid(W * x + b) * db_linear() * 20
+    return da_sigmoid(W * x + b) * db_linear() * 10
 
 def loss(y, y_prim):
     return np.mean(np.power((y - y_prim), 2))
