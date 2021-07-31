@@ -117,6 +117,7 @@ def checkAsteroidHit(character):
                 characters.remove(character)
 ```
 <h3>Main loop:</h3>
+___
 ```python
 num_asteroids = 0
 
@@ -124,7 +125,7 @@ for character in characters:
     if isinstance(character, Bullet):
         checkOutOfRangeBullet(character)
         checkAsteroidHit(character)
-
+        
     # Bounce back asteroid
     if isinstance(character, Asteroid):
         character.checkOutOfBounds()
