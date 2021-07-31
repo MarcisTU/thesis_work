@@ -35,13 +35,19 @@ def scaleMatrix(sx, sy):
     return S
 
 def dot(X, Y):
+    # Check if passed array is pure python or numpy.ndarray
+    if type(X) == list:
+        X = np.array(X)
+    if type(Y) == list:
+        Y = np.array(Y)
+
     # Check if X is vector
     if len(X.shape) == 1:
-        X = np.expand_dims(X, axis=0)
+        X = np.expand_dims(X, axis=0)   # Change shape from (n,) to (1,n)
 
     # Check if Y is vector
     if len(Y.shape) == 1:
-        Y = np.expand_dims(Y, axis=1)
+        Y = np.expand_dims(Y, axis=1)   # Change shape from (n,) to (n,1)
 
     # shape of dot product is X rows and Y columns
     dot_product = np.zeros((X.shape[0], Y.shape[1]), dtype='f')
@@ -51,7 +57,17 @@ def dot(X, Y):
             # multiply according elements from both matrix/vectors and sum them up
             dot_product[x][y] = sum(X[x][k] * Y[k][y] for k in range(Y.shape[0]))
 
+    # Remove added axis from shape
     return np.squeeze(dot_product)
+
+a = [
+    [1, 2, 3],
+    [1, 2, 3],
+    [1, 2, 3]
+]
+b = np.array([3, 2, 1])
+print(dot(a, b))
+
 
 def vec_2dto3d(vec2):
     I = np.array([
@@ -137,7 +153,7 @@ class Character:
         # Calculate centre of mass using average coordinates
         self.calculateCenterOfMass()
 
-        # move character in each axis according to rotation
+        # move character in each axis according to direction
         self.pos[0] += self.direction[0] * self.speed
         self.pos[1] += self.direction[1] * self.speed
         self.T = translateMatrix(dx=0, dy=self.speed)
@@ -151,7 +167,6 @@ class Bullet(Character):
     def __init__(self, start_pos, direction, trans_matrix, scale=[1, 1]):
         super().__init__(start_pos, scale)
         self.C = trans_matrix
-        self.direction = direction
         self.speed = 0.5
         self.generateGeometry()
 
