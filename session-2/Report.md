@@ -162,10 +162,10 @@ def generateGeometry(self):
 ```
 <h4>Screenshots:</h4>
 
-![Game Screeenshot 1](session-2_asteroid1.png "Game Screeenshot 1")
-![Game Screeenshot 2](session-2_asteroid2.png "Game Screeenshot 2")
-![Game Screeenshot 3](session-2_asteroid3.png "Game Screeenshot 3")
-![Game Screeenshot 4](session-2_asteroid4.png "Game Screeenshot 4")
+![Game Screeenshot 1](screenshots/session-2_asteroid1.png "Game Screeenshot 1")
+![Game Screeenshot 2](screenshots/session-2_asteroid2.png "Game Screeenshot 2")
+![Game Screeenshot 3](screenshots/session-2_asteroid3.png "Game Screeenshot 3")
+![Game Screeenshot 4](screenshots/session-2_asteroid4.png "Game Screeenshot 4")
 ___
 ___
 
@@ -232,10 +232,10 @@ theta_3 -= learning_rate * d_mse_loss3
 ```
 
 <h4>Screenshots:</h4>
-![Robot arm 1](robot_arm_1.png "Robot arm 1")
-![Robot arm 2](robot_arm_2.png "Robot arm 2")
-![Robot arm 3](robot_arm_3.png "Robot arm 3")
-![Robot arm 4](robot_arm_4.png "Robot arm 4")
+![Robot arm 1](screenshots/robot_arm_1.png "Robot arm 1")
+![Robot arm 2](screenshots/robot_arm_2.png "Robot arm 2")
+![Robot arm 3](screenshots/robot_arm_3.png "Robot arm 3")
+![Robot arm 4](screenshots/robot_arm_4.png "Robot arm 4")
 ___
 ___
 
@@ -353,5 +353,5 @@ plt.plot(loss_history, '-')
 plt.show()
 ```
 
-![Regression Model](r_model.png "Regression Model")
-![Loss History](loss.png "Loss History")
+![Regression Model](screenshots/r_model.png "Regression Model")
+![Loss History](screenshots/loss.png "Loss History")
