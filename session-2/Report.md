@@ -89,6 +89,7 @@ class Bullet(Character):
 ```
 
 Also added utility functions for collision detection between bullet and asteroid:
+
 ```python
 def checkOutOfRangeBullet(character):
     bullet_pos = character.getCurPos()
@@ -116,7 +117,9 @@ def checkAsteroidHit(character):
                 characters.remove(character_)
                 characters.remove(character)
 ```
+
 <h3>Main loop:</h3>
+
 ___
 ```python
 num_asteroids = 0
@@ -149,7 +152,7 @@ if num_asteroids == 0:
     plt.close('all')
 ```
 
-<h3>Fixed spaghetti code</h3>
+Fixed spaghetti code
 
 ```python
 # generate points using sin and cos functions and add some distortion to the lines
@@ -161,17 +164,16 @@ def generateGeometry(self):
         self.geometry.append([x_point, y_point])
 ```
 
-<h4>Screenshots:</h4>
-
 ![Game Screeenshot 1](screenshots/session-2_asteroid1.png "Game Screeenshot 1")
 ![Game Screeenshot 2](screenshots/session-2_asteroid2.png "Game Screeenshot 2")
 ![Game Screeenshot 3](screenshots/session-2_asteroid3.png "Game Screeenshot 3")
 ![Game Screeenshot 4](screenshots/session-2_asteroid4.png "Game Screeenshot 4")
 ___
 ___
-Task 2: Inverse Kinematics robot
+<h1>Task 2: Inverse Kinematics robot</h1>
 
 <h3>Rotation matrix and Derivative:</h3>
+
 ```python
 def rotation(theta):
     R = np.array([
@@ -188,7 +190,7 @@ def d_rotation(theta):
     return dR
 ```
 
-<h3>Create joints:</h3>
+Create joints:
 
 ```python
 joints = []
@@ -209,13 +211,15 @@ joint = rotMat1 @ (arm_length + rotMat2 @ (arm_length + rotMat3 @ arm_length))
 joints.append(joint)
 ```
 
-<h3>Mean Squared Error loss:</h3>
+Mean Squared Error loss:
+
 ```python
 # Mean Square Error Loss
 mse_loss = np.sum(np.power(target_point - joint, 2))
 ```
 
-<h3>Calculate derivatives for each joint with respect to angles that it depends on:</h3>
+Calculate derivatives for each joint with respect to angles that it depends on:
+
 ```python
 # Loss function derivative for joint1 w.r.t theta_1
 d_mse_loss1 = np.sum((d_rotMat1 @ arm_length) * -2*(target_point - joint))
@@ -231,7 +235,7 @@ d_mse_loss3 += np.sum((rotMat1 @ rotMat2 @ d_rotMat3 @ arm_length) * -2*(target_
 theta_3 -= learning_rate * d_mse_loss3
 ```
 
-<h4>Screenshots:</h4>
+Screenshots:
 ![Robot arm 1](screenshots/robot_arm_1.png "Robot arm 1")
 ![Robot arm 2](screenshots/robot_arm_2.png "Robot arm 2")
 ![Robot arm 3](screenshots/robot_arm_3.png "Robot arm 3")
@@ -241,7 +245,8 @@ ___
 
 <h1>Task 3: Basic Housing Regression</h1>
 
-<h4>Linear function and derivatives:</h4>
+Linear function and derivatives:
+
 ```python
 def linear(W, b, x):
     return W * x + b
@@ -255,7 +260,9 @@ def db_linear():
 def dx_linear(W):
     return W
 ```
+
 <h4>Sigmoid activation:</h4>
+
 ```python
 def sigmoid(a):
     return 1 / (1 + np.exp(-a))
@@ -263,7 +270,9 @@ def sigmoid(a):
 def da_sigmoid(a):
     return sigmoid(a) * (1 - sigmoid(a))
 ```
+
 <h4>Model and derivatives w.r.t W and b:</h4>
+
 ```python
 def model(W, b, x):
     return sigmoid(linear(W, b, x)) * 10
@@ -274,7 +283,9 @@ def dW_model(W, b, x):
 def db_model(W, b, x):
     return da_sigmoid(W * x + b) * db_linear() * 10
 ```
+
 <h4>Finally same with MSE loss function:</h4>
+
 ```python
 def loss(y, y_prim):
     return np.mean(np.power((y - y_prim), 2))
@@ -285,7 +296,9 @@ def dW_loss(y, W, x, b):
 def db_loss(y, W, x, b):
     return np.mean(-2*db_linear()*(y - (W * x + b)))
 ```
+
 <h4>Variable initialization:</h4>
+
 ```python
 X = np.array([1, 2, 3, 4, 5])
 Y = np.array([0.7, 1.5, 4.5, 6.9, 9.5])
@@ -302,7 +315,9 @@ db_mse_loss = 0
 
 learning_rate = 0.0075
 ```
+
 <h3>Training loop</h3>
+
 ```python
 for epoch in range(50):
     # For every data point (Best results in this example ~1.2 loss score)
@@ -330,7 +345,9 @@ for epoch in range(50):
         best_W = W
         best_b = b
 ```
+
 <h3>Test and visualization:</h3>
+
 ```python
 Y_prim = model(best_W, best_b, X)
 print(f"Best loss: {best_loss}")
