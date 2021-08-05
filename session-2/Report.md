@@ -290,11 +290,11 @@ def db_model(W, b, x):
 def loss(y, y_prim):
     return np.mean(np.power((y - y_prim), 2))
 
-def dW_loss(y, W, x, b):
-    return np.mean(-2*dW_linear(x)*(y - (W * x + b)))
+def dW_loss(y, x, y_prim):
+    return np.mean(-2*dW_linear(x)*(y - y_prim))
 
-def db_loss(y, W, x, b):
-    return np.mean(-2*db_linear()*(y - (W * x + b)))
+def db_loss(y, y_prim):
+    return np.mean(-2*db_linear()*(y - y_prim))
 ```
 
 <h4>Variable initialization:</h4>
@@ -309,7 +309,7 @@ best_W = 0
 best_b = 0
 best_loss = np.inf
 loss_history = []
-Y_prim = np.zeros((4,))
+Y_prim = np.zeros((5,))
 dW_mse_loss = 0
 db_mse_loss = 0
 
@@ -319,15 +319,10 @@ learning_rate = 0.0075
 <h3>Training loop</h3>
 
 ```python
-for epoch in range(50):
-    # For every data point (Best results in this example ~1.2 loss score)
-    for i in range(len(X)):
-        dW_mse_loss += dW_loss(Y[i], W, X[i], b)
-        db_mse_loss += db_loss(Y[i], W, X[i], b)
-
+for epoch in range(200):
     # X and Y in batch
-    # dW_mse_loss = dW_loss(Y, W, X, b)
-    # db_mse_loss = db_loss(Y, W, X, b)
+    dW_mse_loss = dW_loss(Y, X, Y_prim)
+    db_mse_loss = db_loss(Y, Y_prim)
 
     W -= dW_mse_loss * learning_rate
     b -= db_mse_loss * learning_rate
