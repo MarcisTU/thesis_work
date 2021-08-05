@@ -365,5 +365,6 @@ plt.plot(loss_history, '-')
 plt.show()
 ```
 
+
 ![Regression Model](screenshots/r_model.png "Regression Model")
 ![Loss History](screenshots/loss.png "Loss History")
