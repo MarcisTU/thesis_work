@@ -133,7 +133,7 @@ class Model:
 
 #### Stochastic Gradient Descent Optimizer:
 
-![Regression Result](screenshots/session_3/gradient_descent.png)
+![Simple Gradient Example](screenshots/gradient_descent.png)
 
 ```python
 class OptimizerSGD:
@@ -251,6 +251,6 @@ ___
 
 #### Screen shot:
 
-![Regression Result](screenshots/train_and_test_loss.png)
+![Train and Test loss relation](screenshots/train_and_test_loss.png)
 
 ![Regression Result](screenshots/diabetes_result1.png)
