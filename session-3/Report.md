@@ -244,7 +244,7 @@ for epoch in range(1, 301):
         plt.ylabel('loss')
         plt.legend(['Train', 'Test'])
         
-		plt.show()
+	plt.show()
 ```
 
 ___
