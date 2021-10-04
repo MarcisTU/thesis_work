@@ -402,7 +402,7 @@ ___
           self.y_prim.grad = -self.y.value / (self.y_prim.value + 1e-8)
   ```
 
-- Embeddings layer (6 columns with 2 categorical features and 1 layer with 3):
+- Embeddings layer (6 columns with 2 categorical features and 1 column with 3):
 
   ```python
   class LayerEmbedding:
