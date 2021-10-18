@@ -1,82 +1,3 @@
-# **Session 5 **
-
-___
-
-## Pytorch Model Embeddings Fix
-
-Diabetes Regression
-
-```python
-class Model(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.layers = torch.nn.Sequential(
-            torch.nn.Linear(in_features=12, out_features=8),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=8, out_features=8),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=8, out_features=5),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=5, out_features=1)
-        )
-        self.embedding_gender = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-
-    def forward(self, x_scalars, x_gender):
-        emb_gender = self.embedding_gender(x_gender)
-        x_cat = torch.cat((x_scalars, emb_gender), dim=-1)
-
-        y_prim = self.layers.forward(x_cat)
-        return y_prim
-```
-
-Placement Data Regression
-
-```python
-class Model(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.layers = torch.nn.Sequential(
-            torch.nn.Linear(in_features=29, out_features=22),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=22, out_features=15),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=15, out_features=10),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=10, out_features=3),
-            torch.nn.Softmax()
-        )
-        self.gender_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-        self.ssc_b_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-        self.hsc_b_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-        self.degree_embedding = torch.nn.Embedding(num_embeddings=3, embedding_dim=5)
-        self.workex_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-        self.spec_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-        self.status_embedding = torch.nn.Embedding(num_embeddings=2, embedding_dim=3)
-
-    def forward(self, x_scal, x_cat):
-        # assign categorical data for according name
-        gender, ssc_b, hsc_b, degree, workex, spec, status = [x_cat[:, i] for i in range(len(x_cat[0]))]
-
-        emb_gender = self.gender_embedding(gender)
-        emb_ssc_b = self.ssc_b_embedding(ssc_b)
-        emb_hsc_b = self.hsc_b_embedding(hsc_b)
-        emb_degree = self.degree_embedding(degree)
-        emb_workex = self.workex_embedding(workex)
-        emb_spec = self.spec_embedding(spec)
-        emb_status = self.status_embedding(status)
-
-        x_cat = torch.cat((x_scal, emb_gender, emb_ssc_b, emb_hsc_b,
-                           emb_degree, emb_workex, emb_spec, emb_status), dim=-1)
-
-        y_prim = self.layers.forward(x_cat)
-        return y_prim
-```
-
-____
-
-## Kernel Function from scratch / ConvNet
-
-```python
 import torch
 import numpy as np
 import tensorflow_datasets as tfds
@@ -86,21 +7,17 @@ import torch.nn.functional
 
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 16
-# Reduce training samples for faster training since we implement kernel function from scratch
-TRAIN_MAX_LEN = 320
-TEST_MAX_LEN = 64
+TRAIN_MAX_LEN = 0
+TEST_MAX_LEN = 0
 IMAGE_SIZE = 200
 DEVICE = 'cpu'
 
 if torch.cuda.is_available():
     DEVICE = 'cuda'
-    TRAIN_MAX_LEN = 640
-    TEST_MAX_LEN = 112
-```
+    TRAIN_MAX_LEN = 0
+    TEST_MAX_LEN = 0
 
-Data Class and loaders:
 
-```python
 class DatasetBeans(torch.utils.data.Dataset):
     def __init__(self, is_train, max_length, rescale_size=None):
         super().__init__()
@@ -147,11 +64,11 @@ data_loader_test = torch.utils.data.DataLoader(
     batch_size=BATCH_SIZE,
     shuffle=False
 )
-```
 
-Convolution class:
+def get_out_size(in_size, padding, kernel_size, stride):
+    return int((in_size + 2*padding - kernel_size) / stride + 1)
 
-```python
+
 class Conv2d(torch.nn.Module):
     def __init__(
             self,
@@ -200,11 +117,8 @@ class Conv2d(torch.nn.Module):
             i_out += 1
 
         return out
-```
 
-Model:
 
-```python
 class Model(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -237,11 +151,8 @@ class Model(torch.nn.Module):
         logits = self.fc.forward(out_flat)
         y_prim = torch.softmax(logits, dim=1)
         return y_prim
-```
 
-Training:
 
-```python
 model = Model()
 model = model.to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -315,11 +226,3 @@ for epoch in range(1, 101):
         plt.xlabel('epoch')
         plt.tight_layout()
         plt.show()
-```
-
-Plot for only 6 epochs (~55min in google colab GPU):
-
-![ConvNet plot](images/convnet_task_kernel.png)
-
-___
-
