@@ -42,7 +42,7 @@ ___
         return out
 ```
 
-![kernel_function](/home/marcis/dev/thesis/session_6/images/convnet_kernel_func_plot.png)
+![kernel_function](images/convnet_kernel_func_plot.png)
 
 
 
