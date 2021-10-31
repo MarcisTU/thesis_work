@@ -197,7 +197,7 @@ for run in grid_runs:
    }
    ```
 
-![run_1_plot](/home/marcis/dev/thesis/session_6/colab_runs/results/content/results/seq_run_1/run_1_plot.png)
+![run_1_plot](colab_runs/results/content/results/seq_run_1/run_1_plot.png)
 
 2. ### run
 
@@ -228,7 +228,7 @@ for run in grid_runs:
    }
    ```
 
-   ![run_2_plot](/home/marcis/dev/thesis/session_6/colab_runs/results/content/results/seq_run_2/run_2_plot.png)
+   ![run_2_plot](colab_runs/results/content/results/seq_run_2/run_2_plot.png)
 
    ### 3.run
 
@@ -259,13 +259,13 @@ for run in grid_runs:
    }
    ```
 
-   ![run_3_plot](/home/marcis/dev/thesis/session_6/colab_runs/results/content/results/seq_run_3/run_3_plot.png)
+   ![run_3_plot](/colab_runs/results/content/results/seq_run_3/run_3_plot.png)
 
    ...
 
    Csv example:
 
-   ![csv_](/home/marcis/dev/thesis/session_6/images/csv_img.png)
+   ![csv_](images/csv_img.png)
 
 ___
 
