@@ -1,0 +1,9 @@
+{
+    "best_train_loss": 0.9419406744150015,
+    "best_train_acc": 0.6184615384615385,
+    "best_train_f1-score": 0.6528834028413325,
+    "best_test_loss": 0.954173855483532,
+    "best_test_acc": 0.6171875,
+    "best_test_f1-score": 0.6868861607142858,
+    "epochs": 50
+}

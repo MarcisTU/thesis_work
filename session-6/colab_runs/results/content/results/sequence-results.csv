@@ -1,0 +1,2 @@
+step,run_name,sequence_name,is_cuda,epochs,best_train_loss,best_train_acc,best_train_f1-score,best_test_loss,best_test_acc,best_test_f1-score
+50,run,seq_run,False,50,0.759580337640011,0.6867424242424243,0.7035772005910347,0.7292145192623138,0.703125,0.7265625
