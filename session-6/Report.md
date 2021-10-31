@@ -259,7 +259,7 @@ for run in grid_runs:
    }
    ```
 
-   ![run_3_plot](/colab_runs/results/content/results/seq_run_3/run_3_plot.png)
+   ![run_3_plot](colab_runs/results/content/results/seq_run_3/run_3_plot.png)
 
    ...
 
