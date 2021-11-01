@@ -8,7 +8,7 @@ ___
 
 ```python
     
-   	def forward(self, x):
+   def forward(self, x):
         batch_size = x.size(0)
         in_size = x.size(-1)  # last dim from (B, C, W, H)
         out_size = get_out_size(in_size, self.padding, self.kernel_size, self.stride)
@@ -39,7 +39,7 @@ ___
                 j_out += 1
             i_out += 1
 
-        return out
+       	return out
 ```
 
 ![kernel_function](images/convnet_kernel_func_plot.png)
