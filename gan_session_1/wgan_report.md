@@ -413,7 +413,7 @@ for epoch in range(epoch_start, EPOCHS):
 
 ![](./images/600.png)
 
-#### Mēģinājumi iesviest uzlabojumus:
+#### Mēģinājumi ieviest uzlabojumus:
 
 ###### (Pagaidām nav skaidra optimālā modeļa arhitektūra un hiperparametru izvēle):
 
