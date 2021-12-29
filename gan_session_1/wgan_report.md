@@ -131,7 +131,7 @@ for epoch in range(epoch_start, EPOCHS):
         optimizer_G.step()
         optimizer_G.zero_grad()
 
-        for n in range(2):
+        for n in range(5):
             z = dist_z.sample((x.size(0), Z_SIZE)).to(DEVICE)
             x_fake = model_G.forward(z, labels)
             for param in model_D.parameters():
