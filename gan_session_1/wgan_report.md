@@ -395,16 +395,15 @@ for epoch in range(epoch_start, EPOCHS):
             y_real = model_D.forward(x, labels)
 
             y_label_weights = label_weights[labels]
-
-            penalty = gradient_penalty(critic=model_D,
-                                       real_data=x,
-                                       fake_data=x_fake,
-                                       labels=labels,
-                                       penalty=10,
-                                       device=DEVICE)
-
-            loss_D = torch.mean(y_fake * y_label_weights) - torch.mean(y_real * y_label_weights) + penalty
+            
+            loss_D = torch.mean(y_fake * y_label_weights) - torch.mean(y_real * y_label_weights)
             loss_D.backward()
+            
+            torch.nn.utils.clip_grad_norm(model_D.parameters(), max_norm=1e-2, norm_type=1)
+            optimizer_D.step()
+            optimizer_D.zero_grad()
+        
+        loss = loss_D + loss_G
 ```
 
 
