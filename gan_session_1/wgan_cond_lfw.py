@@ -29,7 +29,7 @@ parser.add_argument('-run_path', default='output', type=str)
 parser.add_argument('-num_epochs', default=1000, type=int)
 parser.add_argument('-batch_size', default=32, type=int)
 parser.add_argument('-min_faces_count', default=100, type=int)
-parser.add_argument('-learning_rate', default=5e-5, type=float)
+parser.add_argument('-learning_rate', default=1e-4, type=float)
 parser.add_argument('-z_size', default=256, type=int)
 parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
 
@@ -124,29 +124,21 @@ class ModelD(torch.nn.Module):
         )
 
         self.encoder = torch.nn.Sequential(
-            torch.nn.Conv2d(in_channels=4, out_channels=8, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[8, 56, 56]),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=8, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.Conv2d(in_channels=4, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[16, 56, 56]),
             torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
-
-            torch.nn.Conv2d(in_channels=16, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[16, 28, 28]),
-            torch.nn.LeakyReLU(),
 
             torch.nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[32, 28, 28]),
             torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
 
-            torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[64, 14, 14]),
+            torch.nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.LayerNorm(normalized_shape=[32, 14, 14]),
             torch.nn.LeakyReLU(),
 
-            torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[64, 14, 14]),
             torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
@@ -154,15 +146,14 @@ class ModelD(torch.nn.Module):
             torch.nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[128, 7, 7]),
             torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[128, 7, 7]),
-            torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
             torch.nn.AdaptiveAvgPool2d(output_size=(1, 1))
         )
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=128, out_features=1)
+            torch.nn.Linear(in_features=128, out_features=64),
+            torch.nn.LeakyReLU(),
+            torch.nn.Linear(in_features=64, out_features=1)
+
         )
 
     def forward(self, x, labels):
@@ -234,7 +225,7 @@ class ModelG(torch.nn.Module):
 
         self.decoder_size = INPUT_SIZE // 8
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=Z_SIZE, out_features=self.decoder_size ** 2 * 511),
+            torch.nn.Linear(in_features=Z_SIZE, out_features=self.decoder_size ** 2 * 255),
         )
         self.label_embedding = torch.nn.Sequential(
             torch.nn.Embedding(num_embeddings=label_count, embedding_dim=label_count),
@@ -242,15 +233,41 @@ class ModelG(torch.nn.Module):
         )
 
         self.decoder = torch.nn.Sequential(
-            torch.nn.BatchNorm2d(num_features=512),
+            torch.nn.BatchNorm2d(num_features=256),
 
-            ResBlock(in_channels=512, out_channels=256, upsample=True),
-            ResBlock(in_channels=256, out_channels=256, dropout=True),
-            ResBlock(in_channels=256, out_channels=128, upsample=True),
-            ResBlock(in_channels=128, out_channels=64, upsample=True),
-            ResBlock(in_channels=64, out_channels=32, dropout=True),
-            ResBlock(in_channels=32, out_channels=16),
-            ResBlock(in_channels=16, out_channels=8),
+            # ResBlock(in_channels=512, out_channels=256, upsample=True),
+            # ResBlock(in_channels=256, out_channels=256, dropout=True),
+            # ResBlock(in_channels=256, out_channels=128, upsample=True),
+            # ResBlock(in_channels=128, out_channels=64, upsample=True),
+            # ResBlock(in_channels=64, out_channels=32, dropout=True),
+            # ResBlock(in_channels=32, out_channels=16),
+            # ResBlock(in_channels=16, out_channels=8),
+            torch.nn.Upsample(scale_factor=2),
+            torch.nn.Conv2d(in_channels=256, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Upsample(scale_factor=2),
+            torch.nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Upsample(scale_factor=2),
+            torch.nn.Conv2d(in_channels=64, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=32, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=16),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=16, out_channels=8, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=8),
+            torch.nn.LeakyReLU(),
 
             torch.nn.BatchNorm2d(num_features=8),
             torch.nn.Conv2d(in_channels=8, out_channels=3, kernel_size=(3, 3), stride=(1, 1), padding=1),
@@ -261,7 +278,7 @@ class ModelG(torch.nn.Module):
         label_enc = self.label_embedding.forward(labels)
         label_2d = label_enc.view(labels.size(0), 1, self.decoder_size, self.decoder_size)
         z_flat = self.mlp.forward(z)
-        z_2d = z_flat.view(z.size(0), 511, self.decoder_size, self.decoder_size)
+        z_2d = z_flat.view(z.size(0), 255, self.decoder_size, self.decoder_size)
         z_label_enc = torch.cat((label_2d, z_2d), dim=1)
         y_prim = self.decoder.forward(z_label_enc)
 
@@ -373,19 +390,18 @@ for epoch in range(epoch_start, EPOCHS):
         labels = labels.to(DEVICE)
 
         z = dist_z.sample((x.size(0), Z_SIZE)).to(DEVICE)
-        x_gen_labels = torch.randint(0, len(dataset_full.labels), (x.size(0),), device=DEVICE)
-        x_gen = model_G.forward(z, x_gen_labels)
+        x_gen = model_G.forward(z, labels)
         for param in model_D.parameters():
             param.requires_grad = False
-        y_gen = model_D.forward(x_gen, x_gen_labels)
+        y_gen = model_D.forward(x_gen, labels)
 
-        y_gen_label_weights = label_weights[x_gen_labels]
-        loss_G = -torch.mean(y_gen * y_gen_label_weights) # Weight the y_gen because of significant class imbalance
+        y_label_weights = label_weights[labels]
+        loss_G = -torch.mean(y_gen * y_label_weights) # Weight the y_gen because of significant class imbalance
         loss_G.backward()
         optimizer_G.step()
         optimizer_G.zero_grad()
 
-        for n in range(2):
+        for n in range(5):
             z = dist_z.sample((x.size(0), Z_SIZE)).to(DEVICE)
             x_fake = model_G.forward(z, labels)
             for param in model_D.parameters():

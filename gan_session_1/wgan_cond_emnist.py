@@ -109,37 +109,38 @@ class ModelD(torch.nn.Module):
             torch.nn.Conv2d(in_channels=2, out_channels=8, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[8, 28, 28]),
             torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=8, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[16, 28, 28]),
-            torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
 
-            torch.nn.Conv2d(in_channels=16, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[16, 14, 14]),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.Conv2d(in_channels=8, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[32, 14, 14]),
             torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
 
+            # torch.nn.Conv2d(in_channels=16, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            # torch.nn.LayerNorm(normalized_shape=[16, 14, 14]),
+            # torch.nn.LeakyReLU(),
+            #
+            # torch.nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            # torch.nn.LayerNorm(normalized_shape=[32, 14, 14]),
+            # torch.nn.LeakyReLU(),
+            # torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
+            #
+            # torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            # torch.nn.LayerNorm(normalized_shape=[64, 7, 7]),
+            # torch.nn.LeakyReLU(),
+            #
+            # torch.nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            # torch.nn.LayerNorm(normalized_shape=[128, 7, 7]),
+            # torch.nn.LeakyReLU(),
+
             torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.LayerNorm(normalized_shape=[64, 7, 7]),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[128, 7, 7]),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.LayerNorm(normalized_shape=[128, 7, 7]),
             torch.nn.LeakyReLU(),
             torch.nn.AvgPool2d(kernel_size=4, stride=2, padding=1),
             torch.nn.AdaptiveAvgPool2d(output_size=(1, 1))
         )
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=128, out_features=1)
+            torch.nn.Linear(in_features=64, out_features=1)
         )
 
     def forward(self, x, labels):
@@ -221,13 +222,34 @@ class ModelG(torch.nn.Module):
         self.decoder = torch.nn.Sequential(
             torch.nn.BatchNorm2d(num_features=128),
 
-            ResBlock(in_channels=128, out_channels=128, upsample=True),
-            ResBlock(in_channels=128, out_channels=128, dropout=True),
-            ResBlock(in_channels=128, out_channels=64, upsample=True),
-            ResBlock(in_channels=64, out_channels=64),
-            ResBlock(in_channels=64, out_channels=32, dropout=True),
-            ResBlock(in_channels=32, out_channels=16),
-            ResBlock(in_channels=16, out_channels=8),
+            # ResBlock(in_channels=128, out_channels=128, upsample=True),
+            # ResBlock(in_channels=128, out_channels=128, dropout=True),
+            # ResBlock(in_channels=128, out_channels=64, upsample=True),
+            # ResBlock(in_channels=64, out_channels=64),
+            # ResBlock(in_channels=64, out_channels=32, dropout=True),
+            # ResBlock(in_channels=32, out_channels=16),
+            # ResBlock(in_channels=16, out_channels=8),
+            torch.nn.Upsample(scale_factor=2),
+            torch.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=128),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Upsample(scale_factor=2),
+            torch.nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=64),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=64, out_channels=32, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=32),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=32, out_channels=16, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=16),
+            torch.nn.LeakyReLU(),
+
+            torch.nn.Conv2d(in_channels=16, out_channels=8, kernel_size=(3, 3), stride=(1, 1), padding=1),
+            torch.nn.BatchNorm2d(num_features=8),
+            torch.nn.LeakyReLU(),
 
             torch.nn.BatchNorm2d(num_features=8),
             torch.nn.Conv2d(in_channels=8, out_channels=1, kernel_size=(3, 3), stride=(1, 1), padding=1),
@@ -395,7 +417,7 @@ for epoch in range(epoch_start, EPOCHS):
         optimizer_G.step()
         optimizer_G.zero_grad()
 
-        for n in range(5):
+        for n in range(2):
             z = dist_z.sample((x.size(0), Z_SIZE)).to(DEVICE)
             x_fake = model_G.forward(z, labels)
             for param in model_D.parameters():
@@ -403,17 +425,17 @@ for epoch in range(epoch_start, EPOCHS):
             y_fake = model_D.forward(x_fake.detach(), labels)
             y_real = model_D.forward(x, labels)
 
-            penalty = gradient_penalty(critic=model_D,
-                                       real_data=x,
-                                       fake_data=x_fake,
-                                       labels=labels,
-                                       penalty=10,
-                                       device=DEVICE)
+            # penalty = gradient_penalty(critic=model_D,
+            #                            real_data=x,
+            #                            fake_data=x_fake,
+            #                            labels=labels,
+            #                            penalty=10,
+            #                            device=DEVICE)
 
-            loss_D = torch.mean(y_fake) - torch.mean(y_real) + penalty
+            loss_D = torch.mean(y_fake) - torch.mean(y_real)
             loss_D.backward()
 
-            # torch.nn.utils.clip_grad_norm(model_D.parameters(), max_norm=1e-2, norm_type=1)
+            torch.nn.utils.clip_grad_norm(model_D.parameters(), max_norm=1e-2, norm_type=1)
             optimizer_D.step()
             optimizer_D.zero_grad()
 

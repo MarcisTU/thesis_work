@@ -30,11 +30,11 @@ parser.add_argument('-run_path', default='', type=str)
 
 parser.add_argument('-num_epochs', default=1000, type=int)
 parser.add_argument('-batch_size', default=64, type=int)
-parser.add_argument('-classes_count', default=47, type=int)
+parser.add_argument('-classes_count', default=20, type=int)
 parser.add_argument('-samples_per_class', default=400, type=int) # 400 is max per label
 
-parser.add_argument('-learning_rate', default=5e-5, type=float)
-parser.add_argument('-z_size', default=256, type=int)
+parser.add_argument('-learning_rate', default=1e-4, type=float)
+parser.add_argument('-z_size', default=128, type=int)
 
 parser.add_argument('-is_debug', default=False, type=lambda x: (str(x).lower() == 'true'))
 
@@ -95,7 +95,7 @@ class ModelG(torch.nn.Module):
 
         self.decoder_size = INPUT_SIZE // 4
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(in_features=Z_SIZE, out_features=self.decoder_size ** 2 * 255),
+            torch.nn.Linear(in_features=Z_SIZE, out_features=self.decoder_size ** 2 * 127),
         )
         self.label_embedding = torch.nn.Sequential(
             torch.nn.Embedding(num_embeddings=MAX_CLASSES, embedding_dim=MAX_CLASSES),
@@ -103,30 +103,14 @@ class ModelG(torch.nn.Module):
         )
 
         self.decoder = torch.nn.Sequential(
-            torch.nn.BatchNorm2d(num_features=256),
-            torch.nn.Upsample(scale_factor=2),
-            torch.nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.BatchNorm2d(num_features=256),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.BatchNorm2d(num_features=256),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Upsample(scale_factor=2),
-            torch.nn.Conv2d(in_channels=256, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.BatchNorm2d(num_features=128),
-            torch.nn.LeakyReLU(),
-
+            torch.nn.Upsample(scale_factor=2),
             torch.nn.Conv2d(in_channels=128, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.BatchNorm2d(num_features=128),
             torch.nn.LeakyReLU(),
 
+            torch.nn.Upsample(scale_factor=2),
             torch.nn.Conv2d(in_channels=128, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
-            torch.nn.BatchNorm2d(num_features=64),
-            torch.nn.LeakyReLU(),
-
-            torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=1),
             torch.nn.BatchNorm2d(num_features=64),
             torch.nn.LeakyReLU(),
 
@@ -151,7 +135,7 @@ class ModelG(torch.nn.Module):
         label_enc = self.label_embedding.forward(labels)
         label_2d = label_enc.view(labels.size(0), 1, self.decoder_size, self.decoder_size)
         z_flat = self.mlp.forward(z)
-        z_2d = z_flat.view(z.size(0), 255, self.decoder_size, self.decoder_size)
+        z_2d = z_flat.view(z.size(0), 127, self.decoder_size, self.decoder_size)
         z_label_enc = torch.cat((label_2d, z_2d), dim=1)
         y_prim = self.decoder.forward(z_label_enc)
 
@@ -167,16 +151,16 @@ class ModelG(torch.nn.Module):
         label_2d = label_enc.view(labels.size(0), 1, self.decoder_size, self.decoder_size)
 
         z_flat = self.mlp.forward(z)
-        z_2d = z_flat.view(z.size(0), 255, self.decoder_size, self.decoder_size)
+        z_2d = z_flat.view(z.size(0), 127, self.decoder_size, self.decoder_size)
 
-        z_label_enc = torch.cat((z_2d, label_2d), dim=1)
+        z_label_enc = torch.cat((label_2d, z_2d), dim=1)
         return z_label_enc
 
 
 dataset_full = DatasetEMNIST()
 
 model_G = ModelG()
-checkpoint = torch.load('./wgan_emnist/emnist-model-100.pt', map_location='cpu')
+checkpoint = torch.load('./wgan_emnist/emnist-model-540.pt', map_location='cpu')
 model_G.load_state_dict(checkpoint['model_G_state_dict'])
 model_G.train()
 torch.set_grad_enabled(False)
@@ -220,8 +204,8 @@ def latent_slerp(gan, z0, z1, n_frames): # from z0 -> z1
     return imgs
 
 n_frames = 100
-label_1 = 6
-label_2 = 33
+label_1 = 7
+label_2 = 2
 
 z0 = model_G.create_latent_var(batch_size=1, label=label_1, seed=55)
 z1 = model_G.create_latent_var(batch_size=1, label=label_2, seed=55)
