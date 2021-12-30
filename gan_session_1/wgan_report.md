@@ -98,7 +98,7 @@ class ModelG(torch.nn.Module):
         label_2d = label_enc.view(labels.size(0), 1, self.decoder_size, self.decoder_size)
         z_flat = self.mlp.forward(z)
         z_2d = z_flat.view(z.size(0), 127, self.decoder_size, self.decoder_size)
-        z_label_enc = torch.cat((label_2d, z_2d), dim=1)
+        z_label_enc = torch.cat((z_2d, label_2d), dim=1)
         y_prim = self.decoder.forward(z_label_enc)
 
         return y_prim
