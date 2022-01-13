@@ -333,7 +333,7 @@ class Generator(nn.Module):
         )
 
         model = [nn.ReflectionPad2d(padding=3)]
-        model += self._create_layer(in_channels=self.channels+1, out_channels=64, kernel_size=7, stride=1, padding=0)
+        model += self._create_layer(in_channels=self.channels, out_channels=64, kernel_size=7, stride=1, padding=0)
         # downsample
         model += self._create_layer(in_channels=64, out_channels=128, kernel_size=3)
         model += self._create_layer(in_channels=128, out_channels=256, kernel_size=3)
@@ -378,7 +378,7 @@ class Discriminator(nn.Module):
         )
 
         self.model = nn.Sequential(
-            *self._create_layer(in_channels=self.channels+1, out_channels=64, stride=2, normalize=False),
+            *self._create_layer(in_channels=self.channels, out_channels=64, stride=2, normalize=False),
             *self._create_layer(in_channels=64, out_channels=128, stride=2),
             *self._create_layer(in_channels=128, out_channels=256, stride=2),
             # *self._create_layer(in_channels=256, out_channels=512, stride=1),
