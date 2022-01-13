@@ -25,12 +25,13 @@ plt.style.use('dark_background')
 
 import torch.utils.data
 
-parser = argparse.ArgumentParser(add_help=False)
+argument_parser = argparse.ArgumentParser(add_help=False)
+parser = argument_parser
 parser.add_argument('-run_path', default='output', type=str)
 
 parser.add_argument('-num_epochs', default=2000, type=int)
 parser.add_argument('-batch_size', default=64, type=int)
-parser.add_argument('-chars_include', default='ABCDEFGH', type=str) #DEFGHIJKLMNOPQRSTUVWXYZ
+parser.add_argument('-chars_include', default='ABCDE', type=str) #DEFGHIJKLMNOPQRSTUVWXYZ
 parser.add_argument('-samples_per_class', default=1000, type=int)
 
 parser.add_argument('-learning_rate_g', default=2e-4, type=float)
@@ -360,11 +361,11 @@ class Generator(nn.Module):
         layers.append(nn.ReLU(inplace=True))
         return layers
 
-    def forward(self, x, labels):
-        label_enc = self.label_embedding.forward(labels)
-        label_enc = label_enc.view(labels.size(0), 1, INPUT_SIZE, INPUT_SIZE)
-        x_labels_cat = torch.cat((x, label_enc), dim=1)
-        return self.model.forward(x_labels_cat)
+    def forward(self, x):
+        # label_enc = self.label_embedding.forward(labels)
+        # label_enc = label_enc.view(labels.size(0), 1, INPUT_SIZE, INPUT_SIZE)
+        # x_labels_cat = torch.cat((x, label_enc), dim=1)
+        return self.model.forward(x)
 
 
 class Discriminator(nn.Module):
@@ -380,8 +381,8 @@ class Discriminator(nn.Module):
             *self._create_layer(in_channels=self.channels+1, out_channels=64, stride=2, normalize=False),
             *self._create_layer(in_channels=64, out_channels=128, stride=2),
             *self._create_layer(in_channels=128, out_channels=256, stride=2),
-            *self._create_layer(in_channels=256, out_channels=512, stride=1),
-            nn.Conv2d(in_channels=512, out_channels=1, kernel_size=4, stride=1, padding=1)
+            # *self._create_layer(in_channels=256, out_channels=512, stride=1),
+            nn.Conv2d(in_channels=256, out_channels=1, kernel_size=3, stride=1, padding=1)
         )
 
     def _create_layer(self, in_channels, out_channels, stride, normalize=True):
@@ -391,11 +392,11 @@ class Discriminator(nn.Module):
         layers.append(nn.LeakyReLU(negative_slope=0.2, inplace=True))
         return layers
 
-    def forward(self, x, labels):
-        label_enc = self.label_embedding.forward(labels)
-        label_enc = label_enc.view(labels.size(0), 1, INPUT_SIZE, INPUT_SIZE)
-        x_labels_cat = torch.cat((x, label_enc), dim=1)
-        return self.model.forward(x_labels_cat)
+    def forward(self, x):
+        # label_enc = self.label_embedding.forward(labels)
+        # label_enc = label_enc.view(labels.size(0), 1, INPUT_SIZE, INPUT_SIZE)
+        # x_labels_cat = torch.cat((x, label_enc), dim=1)
+        return self.model.forward(x)
 
 
 class ImageBuffer():
@@ -466,41 +467,41 @@ for epoch in range(1, EPOCHS):
 
     for x_s, label_s in tqdm(data_loader_source, desc=stage):
         x_t, label_t = next(iter_data_loader_target)
-        label_s = process_labels(label_s)
-        label_t = process_labels(label_t)
+        # label_s = process_labels(label_s)
+        # label_t = process_labels(label_t)
 
-        if x_s.size() != x_t.size() or label_s.size() != label_t.size():
+        if x_s.size() != x_t.size():
             break
 
         x_s = x_s.to(DEVICE) # source
         x_t = x_t.to(DEVICE) # target
-        label_s = label_s.to(DEVICE)
-        label_t = label_t.to(DEVICE)
+        # label_s = label_s.to(DEVICE)
+        # label_t = label_t.to(DEVICE)
         x_s_prev = x_s # for visualization
         x_t_prev = x_t # for visualization
 
         optimizer_G.zero_grad()
         ### Train G
-        g_t = model_G_s_t.forward(x_s, label_s)
-        g_s = model_G_t_s.forward(x_t, label_t)
+        g_t = model_G_s_t.forward(x_s)
+        g_s = model_G_t_s.forward(x_t)
 
         # generator loss
-        y_g_t = model_D_t.forward(g_t, label_t) # 1 = real, 0 = fake
-        y_g_s = model_D_s.forward(g_s, label_s)
+        y_g_t = model_D_t.forward(g_t) # 1 = real, 0 = fake
+        y_g_s = model_D_s.forward(g_s)
         loss_g_t = torch.mean((y_g_t - 1.0) ** 2) # L2, MSE, LSGAN => Alternative to W-GAN
         loss_g_s = torch.mean((y_g_s - 1.0) ** 2)
         loss_g = (loss_g_t + loss_g_s) / 2
 
         # cycle loss
-        recov_s = model_G_t_s.forward(g_t, label_t)
+        recov_s = model_G_t_s.forward(g_t)
         loss_c_s = torch.mean(torch.abs(recov_s - x_s))
-        recov_t = model_G_s_t.forward(g_s, label_s)
+        recov_t = model_G_s_t.forward(g_s)
         loss_c_t = torch.mean(torch.abs(recov_t - x_t))
         loss_c = (loss_c_s + loss_c_t) / 2
 
         # identity loss
-        i_t = model_G_s_t.forward(x_t, label_t)
-        i_s = model_G_t_s.forward(x_s, label_s)
+        i_t = model_G_s_t.forward(x_t)
+        i_s = model_G_t_s.forward(x_s)
         loss_i_t = torch.mean(torch.abs(i_t - x_t))
         loss_i_s = torch.mean(torch.abs(i_s - x_s))
         loss_i = (loss_i_s + loss_i_t) / 2
@@ -516,11 +517,11 @@ for epoch in range(1, EPOCHS):
         ### Train D_s
         optimizer_D_s.zero_grad()
 
-        y_x_s = model_D_s.forward(x_s, label_s)
+        y_x_s = model_D_s.forward(x_s)
         loss_x_s = torch.mean((y_x_s - 1.0) ** 2)
         # g_s = model_G_t_s.forward(x_t)
         g_s = image_buffer_s.update(g_s)
-        y_g_s = model_D_s.forward(g_s.detach(), label_s)
+        y_g_s = model_D_s.forward(g_s.detach())
         loss_g_s = torch.mean(y_g_s ** 2)
 
         d_loss_s = (loss_x_s + loss_g_s) / 2
@@ -530,11 +531,11 @@ for epoch in range(1, EPOCHS):
         ### Train D_s
         optimizer_D_t.zero_grad()
 
-        y_x_t = model_D_t.forward(x_t, label_t)
+        y_x_t = model_D_t.forward(x_t)
         loss_x_t = torch.mean((y_x_t - 1.0) ** 2)
         # g_t = model_G_s_t.forward(x_s)
         g_t = image_buffer_t.update(g_t)
-        y_g_t = model_D_t.forward(g_t.detach(), label_t)
+        y_g_t = model_D_t.forward(g_t.detach())
         loss_g_t = torch.mean(y_g_t ** 2)
 
         loss_d = (loss_g_t + loss_x_t) / 2
@@ -557,14 +558,14 @@ for epoch in range(1, EPOCHS):
         with torch.no_grad():
             imgs_s, label_s = next(iter(test_dataloader_source))
             imgs_t, label_t = next(iter(test_dataloader_target))
-            label_s = process_labels(label_s)
-            label_t = process_labels(label_t)
-            label_s = label_s.to(DEVICE)
-            label_t = label_t.to(DEVICE)
+            # label_s = process_labels(label_s)
+            # label_t = process_labels(label_t)
+            # label_s = label_s.to(DEVICE)
+            # label_t = label_t.to(DEVICE)
             _real_s = imgs_s.to(DEVICE)
-            _fake_t = model_G_s_t.forward(_real_s, label_s)
+            _fake_t = model_G_s_t.forward(_real_s)
             _real_t = imgs_t.to(DEVICE)
-            _fake_s = model_G_t_s.forward(_real_t, label_t)
+            _fake_s = model_G_t_s.forward(_real_t)
             viz_sample = torch.cat((_real_s, _fake_t, _real_t, _fake_s), 0)
             vutils.save_image(viz_sample,
                               os.path.join(RUN_PATH, 'samples_{}.png'.format(epoch)),
