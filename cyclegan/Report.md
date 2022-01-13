@@ -211,9 +211,32 @@ ____
 
 ​	![](./images/plt-720.png)
 
+- Visualization code:
+
+  ```python
+      ...
+      if epoch % 1 == 0:
+          with torch.no_grad():
+              imgs_s, label_s = next(iter(test_dataloader_source))
+              imgs_t, label_t = next(iter(test_dataloader_target))
+              _real_s = imgs_s.to(DEVICE)
+              _fake_t = model_G_s_t.forward(_real_s)
+              _real_t = imgs_t.to(DEVICE)
+              _fake_s = model_G_t_s.forward(_real_t)
+              viz_sample = torch.cat((_real_s, _fake_t, _real_t, _fake_s), 0)
+              vutils.save_image(viz_sample,
+                                os.path.join(RUN_PATH, 'samples_{}.png'.format(epoch)),
+                                nrow=16)
+  ```
+
+  
+
 - x_s
+
 - g_t
+
 - x_t
+
 - g_s
 
 ![](./images/samples_720.png)
