@@ -381,7 +381,7 @@ class Discriminator(nn.Module):
             *self._create_layer(in_channels=self.channels, out_channels=64, stride=2, normalize=False),
             *self._create_layer(in_channels=64, out_channels=128, stride=2),
             *self._create_layer(in_channels=128, out_channels=256, stride=2),
-            # *self._create_layer(in_channels=256, out_channels=512, stride=1),
+            *self._create_layer(in_channels=256, out_channels=512, stride=1),
             nn.Conv2d(in_channels=256, out_channels=1, kernel_size=3, stride=1, padding=1)
         )
 
